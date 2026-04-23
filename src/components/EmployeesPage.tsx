@@ -178,6 +178,7 @@ const EmployeeFormModal: React.FC<EmployeeFormModalProps> = ({ employeeId, onClo
     departmentId: existingEmployee?.departmentId || departments[0]?.id || '',
     hourlyRate: existingEmployee?.hourlyRate || 0,
     hireDate: existingEmployee?.hireDate || new Date().toISOString().split('T')[0],
+    isDismissed: existingEmployee?.isDismissed || false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {

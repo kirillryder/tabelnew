@@ -19,12 +19,14 @@ interface TimesheetStore {
   
   // Department management
   addDepartment: (name: string, parentDepartmentId?: string) => void;
+  updateDepartment: (id: string, updates: Partial<Department>) => void;
   deleteDepartment: (id: string) => void;
   getDepartments: () => Department[];
   
   // Employee management
   addEmployee: (employee: Omit<Employee, 'id'>) => void;
   updateEmployee: (id: string, employee: Partial<Employee>) => void;
+  dismissEmployee: (id: string, dismissalDate: string) => void;
   deleteEmployee: (id: string) => void;
   
   // Payment management
@@ -41,12 +43,12 @@ const mockDepartments: Department[] = [
 ];
 
 const mockEmployees: Employee[] = [
-  { id: '1', fullName: 'Иванов Иван Иванович', age: 32, departmentId: '1', hourlyRate: 500, hireDate: '2020-01-15' },
-  { id: '2', fullName: 'Петров Петр Петрович', age: 28, departmentId: '4', hourlyRate: 450, hireDate: '2021-03-20' },
-  { id: '3', fullName: 'Сидорова Анна Сергеевна', age: 35, departmentId: '2', hourlyRate: 400, hireDate: '2019-06-10' },
-  { id: '4', fullName: 'Козлов Дмитрий Михайлович', age: 41, departmentId: '3', hourlyRate: 380, hireDate: '2018-11-05' },
-  { id: '5', fullName: 'Новикова Елена Владимировна', age: 29, departmentId: '2', hourlyRate: 420, hireDate: '2022-02-28' },
-  { id: '6', fullName: 'Морозов Алексей Андреевич', age: 37, departmentId: '3', hourlyRate: 390, hireDate: '2020-08-12' },
+  { id: '1', fullName: 'Иванов Иван Иванович', age: 32, departmentId: '1', hourlyRate: 500, hireDate: '2020-01-15', isDismissed: false },
+  { id: '2', fullName: 'Петров Петр Петрович', age: 28, departmentId: '4', hourlyRate: 450, hireDate: '2021-03-20', isDismissed: false },
+  { id: '3', fullName: 'Сидорова Анна Сергеевна', age: 35, departmentId: '2', hourlyRate: 400, hireDate: '2019-06-10', isDismissed: false },
+  { id: '4', fullName: 'Козлов Дмитрий Михайлович', age: 41, departmentId: '3', hourlyRate: 380, hireDate: '2018-11-05', isDismissed: false },
+  { id: '5', fullName: 'Новикова Елена Владимировна', age: 29, departmentId: '2', hourlyRate: 420, hireDate: '2022-02-28', isDismissed: false },
+  { id: '6', fullName: 'Морозов Алексей Андреевич', age: 37, departmentId: '3', hourlyRate: 390, hireDate: '2020-08-12', isDismissed: false },
 ];
 
 export const useTimesheetStore = create<TimesheetStore>((set, get) => ({
@@ -89,6 +91,12 @@ export const useTimesheetStore = create<TimesheetStore>((set, get) => ({
     }));
   },
   
+  updateDepartment: (id, updates) => {
+    set((state) => ({
+      departments: state.departments.map(d => d.id === id ? { ...d, ...updates } : d),
+    }));
+  },
+  
   getDepartments: () => get().departments,
   
   // Employee management
@@ -102,6 +110,14 @@ export const useTimesheetStore = create<TimesheetStore>((set, get) => ({
   updateEmployee: (id, updates) => {
     set((state) => ({
       employees: state.employees.map(e => e.id === id ? { ...e, ...updates } : e),
+    }));
+  },
+  
+  dismissEmployee: (id, dismissalDate) => {
+    set((state) => ({
+      employees: state.employees.map(e => 
+        e.id === id ? { ...e, isDismissed: true, dismissalDate } : e
+      ),
     }));
   },
   

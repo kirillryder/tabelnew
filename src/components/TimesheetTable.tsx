@@ -20,7 +20,9 @@ export const TimesheetTable: React.FC = () => {
     return employees.filter(employee => {
       const matchesSearch = employee.fullName.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesDepartment = !departmentFilter || employee.departmentId === departmentFilter;
-      return matchesSearch && matchesDepartment;
+      // Exclude dismissed employees from the timesheet view
+      const isActive = !employee.isDismissed;
+      return matchesSearch && matchesDepartment && isActive;
     });
   }, [employees, searchQuery, departmentFilter]);
 
