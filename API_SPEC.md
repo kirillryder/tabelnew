@@ -1,45 +1,33 @@
-# API Specification for Timesheet Application
+# API Спецификация для системы учета рабочего времени
 
-## Base URL
-`/api/v1`
+## Base URL: `/api/v1`
 
-## Endpoints
+---
 
-### Employees
+## Сотрудники (Employees)
 
-#### GET /employees
-Получить список всех сотрудников с поддержкой фильтрации и пагинации.
+### GET /employees
+Получить список всех сотрудников.
 
 **Query Parameters:**
-- `search` (string, optional): Поиск по ФИО
-- `department` (string, optional): Фильтр по подразделению
-- `page` (number, optional): Номер страницы (default: 1)
-- `limit` (number, optional): Количество записей на странице (default: 50)
+- `search` (string, optional) — поиск по ФИО
+- `departmentId` (string, optional) — фильтр по подразделению
 
 **Response:**
 ```json
-{
-  "data": [
-    {
-      "id": "string",
-      "fullName": "string",
-      "department": "string",
-      "hourlyRate": number,
-      "position": "string",
-      "createdAt": "datetime",
-      "updatedAt": "datetime"
-    }
-  ],
-  "meta": {
-    "total": number,
-    "page": number,
-    "limit": number,
-    "totalPages": number
+[
+  {
+    "id": "string",
+    "fullName": "string",
+    "age": number,
+    "departmentId": "string",
+    "hourlyRate": number,
+    "hireDate": "YYYY-MM-DD"
   }
-}
+]
 ```
 
-#### GET /employees/:id
+### GET /employees/:id
 Получить данные конкретного сотрудника.
 
 **Response:**
@@ -47,110 +35,55 @@
 {
   "id": "string",
   "fullName": "string",
-  "department": "string",
+  "age": number,
+  "departmentId": "string",
   "hourlyRate": number,
-  "position": "string",
-  "createdAt": "datetime",
-  "updatedAt": "datetime"
+  "hireDate": "YYYY-MM-DD"
 }
 ```
 
-#### POST /employees
+### POST /employees
 Создать нового сотрудника.
 
 **Request Body:**
 ```json
 {
   "fullName": "string (required)",
-  "department": "string (required)",
-  "hourlyRate": "number (required)",
-  "position": "string (optional)"
+  "age": "number (required, min: 18, max: 100)",
+  "departmentId": "string (required)",
+  "hourlyRate": "number (required, min: 0)",
+  "hireDate": "string (required, format: YYYY-MM-DD)"
 }
 ```
 
-#### PUT /employees/:id
+**Response:** Created employee object with status 201.
+
+### PUT /employees/:id
 Обновить данные сотрудника.
 
-#### DELETE /employees/:id
+**Request Body:** (all fields optional)
+```json
+{
+  "fullName": "string",
+  "age": number,
+  "departmentId": "string",
+  "hourlyRate": number,
+  "hireDate": "string"
+}
+```
+
+**Response:** Updated employee object.
+
+### DELETE /employees/:id
 Удалить сотрудника.
 
----
-
-### Timesheet Entries
-
-#### GET /timesheet
-Получить записи табеля за указанный период.
-
-**Query Parameters:**
-- `year` (number, required): Год
-- `month` (number, required): Месяц (0-11)
-- `employeeId` (string, optional): Фильтр по сотруднику
-- `department` (string, optional): Фильтр по подразделению
-
-**Response:**
-```json
-{
-  "entries": [
-    {
-      "id": "string",
-      "employeeId": "string",
-      "date": "date",
-      "hours": number,
-      "type": "string",
-      "comment": "string"
-    }
-  ],
-  "summary": {
-    "employeeId": {
-      "totalHours": number,
-      "totalSalary": number,
-      "workingDays": number,
-      "weekendDays": number
-    }
-  }
-}
-```
-
-#### GET /timesheet/:employeeId
-Получить записи табеля конкретного сотрудника.
-
-#### POST /timesheet/bulk
-Массовое создание/обновление записей табеля.
-
-**Request Body:**
-```json
-{
-  "entries": [
-    {
-      "employeeId": "string",
-      "date": "date",
-      "hours": number,
-      "type": "string"
-    }
-  ]
-}
-```
-
-**Response:**
-```json
-{
-  "success": boolean,
-  "updated": number,
-  "created": number
-}
-```
-
-#### PUT /timesheet/:id
-Обновить запись табеля.
-
-#### DELETE /timesheet/:id
-Удалить запись табеля.
+**Response:** Status 204 No Content.
 
 ---
 
-### Departments
+## Подразделения (Departments)
 
-#### GET /departments
+### GET /departments
 Получить список всех подразделений.
 
 **Response:**
@@ -159,107 +92,226 @@
   {
     "id": "string",
     "name": "string",
-    "employeeCount": number
+    "parentDepartmentId": "string | null"
   }
 ]
 ```
 
-#### POST /departments
-Создать новое подразделение.
-
----
-
-### Reports
-
-#### GET /reports/monthly
-Получить ежемесячный отчет.
-
-**Query Parameters:**
-- `year` (number, required)
-- `month` (number, required)
-- `department` (string, optional)
+### GET /departments/:id
+Получить данные подразделения с вложенными подразделениями и сотрудниками.
 
 **Response:**
 ```json
 {
-  "period": {
-    "year": number,
+  "id": "string",
+  "name": "string",
+  "parentDepartmentId": "string | null",
+  "children": ["Department[]"],
+  "employees": ["Employee[]"]
+}
+```
+
+### POST /departments
+Создать новое подразделение.
+
+**Request Body:**
+```json
+{
+  "name": "string (required)",
+  "parentDepartmentId": "string (optional)"
+}
+```
+
+**Response:** Created department object with status 201.
+
+### PUT /departments/:id
+Обновить подразделение.
+
+**Request Body:**
+```json
+{
+  "name": "string",
+  "parentDepartmentId": "string | null"
+}
+```
+
+**Response:** Updated department object.
+
+### DELETE /departments/:id
+Удалить подразделение.
+
+**Response:** Status 204 No Content.
+
+---
+
+## Табель (Timesheet Entries)
+
+### GET /timesheet
+Получить записи табеля за указанный период.
+
+**Query Parameters:**
+- `year` (number, required)
+- `month` (number, required, 0-11)
+- `employeeId` (string, optional)
+
+**Response:**
+```json
+[
+  {
+    "employeeId": "string",
+    "date": "YYYY-MM-DD",
+    "hours": number,
+    "type": "Я | Б | О | К | Н | ''"
+  }
+]
+```
+
+### POST /timesheet/entry
+Создать или обновить запись в табеле.
+
+**Request Body:**
+```json
+{
+  "employeeId": "string (required)",
+  "date": "string (required, format: YYYY-MM-DD)",
+  "hours": "number (required, min: 0, max: 24)",
+  "type": "string (required, enum: Я, Б, О, К, Н, '')"
+}
+```
+
+**Response:** Created/updated entry object.
+
+### DELETE /timesheet/entry/:employeeId/:date
+Удалить запись из табеля.
+
+**Response:** Status 204 No Content.
+
+---
+
+## Выплаты (Payments)
+
+### GET /payments
+Получить список выплат.
+
+**Query Parameters:**
+- `year` (number, required)
+- `month` (number, required, 0-11)
+- `employeeId` (string, optional)
+
+**Response:**
+```json
+[
+  {
+    "id": "string",
+    "employeeId": "string",
     "month": number,
-    "workingDays": number,
-    "weekendDays": number
-  },
-  "summary": {
-    "totalEmployees": number,
-    "totalHours": number,
-    "totalSalary": number,
-    "averageHours": number
-  },
-  "byDepartment": [
+    "year": number,
+    "amountDue": number,
+    "amountPaid": number,
+    "paymentMethod": "transfer | cash",
+    "paymentDate": "YYYY-MM-DD | null"
+  }
+]
+```
+
+### GET /payments/summary
+Получить сводку по выплатам за месяц.
+
+**Query Parameters:**
+- `year` (number, required)
+- `month` (number, required, 0-11)
+
+**Response:**
+```json
+{
+  "totalDue": number,
+  "totalPaid": number,
+  "totalRemaining": number,
+  "employees": [
     {
-      "name": "string",
-      "totalHours": number,
-      "totalSalary": number,
-      "employeeCount": number
+      "employeeId": "string",
+      "fullName": "string",
+      "hoursWorked": number,
+      "salary": number,
+      "paid": number,
+      "due": number
     }
   ]
 }
 ```
 
-#### GET /reports/employee/:id
-Получить отчет по конкретному сотруднику.
+### POST /payments
+Зафиксировать выплату сотруднику.
+
+**Request Body:**
+```json
+{
+  "employeeId": "string (required)",
+  "month": "number (required, 0-11)",
+  "year": "number (required)",
+  "amountDue": "number (required)",
+  "amountPaid": "number (required, min: 0)",
+  "paymentMethod": "string (required, enum: transfer, cash)",
+  "paymentDate": "string (optional, format: YYYY-MM-DD)"
+}
+```
+
+**Response:** Created payment object with status 201.
+
+### DELETE /payments/:id
+Удалить запись о выплате.
+
+**Response:** Status 204 No Content.
 
 ---
 
-## Attendance Types
+## Отчеты (Reports)
 
-| Code | Description     | Default Hours |
-|------|-----------------|---------------|
-| Я    | Явка            | 8             |
-| Б    | Больничный      | 0             |
-| О    | Отпуск          | 0             |
-| К    | Командировка    | 8             |
-| Н    | Неявка          | 0             |
-| В    | Выходной        | 0             |
-| ПР   | Праздничный день| 0             |
+### GET /reports/salary
+Получить отчет по зарплате за период.
+
+**Query Parameters:**
+- `year` (number, required)
+- `month` (number, required, 0-11)
+- `departmentId` (string, optional)
+
+**Response:**
+```json
+{
+  "period": "YYYY-MM",
+  "totalEmployees": number,
+  "totalHours": number,
+  "totalSalary": number,
+  "byDepartment": [
+    {
+      "departmentId": "string",
+      "departmentName": "string",
+      "employeesCount": number,
+      "totalHours": number,
+      "totalSalary": number
+    }
+  ]
+}
+```
 
 ---
 
 ## Error Responses
 
-All errors follow this format:
+Все ошибки возвращаются в формате:
 
 ```json
 {
   "error": {
-    "code": "string",
-    "message": "string",
-    "details": "object (optional)"
+    "code": "ERROR_CODE",
+    "message": "Human readable message",
+    "details": {}
   }
 }
 ```
 
-### Common Error Codes
-- `VALIDATION_ERROR` - Ошибка валидации данных
-- `NOT_FOUND` - Ресурс не найден
-- `UNAUTHORIZED` - Требуется авторизация
-- `FORBIDDEN` - Доступ запрещен
-- `CONFLICT` - Конфликт данных
-- `SERVER_ERROR` - Внутренняя ошибка сервера
-
----
-
-## Authentication
-
-Все endpoints требуют JWT аутентификации через header:
-```
-Authorization: Bearer <token>
-```
-
-### POST /auth/login
-Получить токен доступа.
-
-### POST /auth/refresh
-Обновить токен доступа.
-
-### POST /auth/logout
-Выйти из системы.
+**Common Error Codes:**
+- `VALIDATION_ERROR` — ошибка валидации данных (400)
+- `NOT_FOUND` — ресурс не найден (404)
+- `CONFLICT` — конфликт данных (409)
+- `INTERNAL_ERROR` — внутренняя ошибка сервера (500)

@@ -66,7 +66,7 @@ export const Header: React.FC = () => {
             >
               <option value="">Все подразделения</option>
               {departments.map((dept) => (
-                <option key={dept} value={dept}>{dept}</option>
+                <option key={dept.id} value={dept.id}>{dept.name}</option>
               ))}
             </select>
           </div>
