@@ -6,6 +6,7 @@ import { getDaysInMonth, formatDateKey, isWeekend, getDayName } from '../utils/d
 export const TimesheetTable: React.FC = () => {
   const { 
     employees, 
+    departments,
     entries, 
     selectedYear, 
     selectedMonth,
@@ -18,7 +19,7 @@ export const TimesheetTable: React.FC = () => {
   const filteredEmployees = useMemo(() => {
     return employees.filter(employee => {
       const matchesSearch = employee.fullName.toLowerCase().includes(searchQuery.toLowerCase());
-      const matchesDepartment = !departmentFilter || employee.department === departmentFilter;
+      const matchesDepartment = !departmentFilter || employee.departmentId === departmentFilter;
       return matchesSearch && matchesDepartment;
     });
   }, [employees, searchQuery, departmentFilter]);
@@ -41,6 +42,11 @@ export const TimesheetTable: React.FC = () => {
     }
     
     return { totalHours, salary };
+  };
+
+  const getDepartmentName = (deptId: string) => {
+    const dept = departments.find(d => d.id === deptId);
+    return dept?.name || '';
   };
 
   return (
@@ -87,7 +93,7 @@ export const TimesheetTable: React.FC = () => {
                     {employee.fullName}
                   </td>
                   <td className="px-2 py-3 whitespace-nowrap text-sm text-gray-500 border-r border-gray-200">
-                    {employee.department}
+                    {getDepartmentName(employee.departmentId)}
                   </td>
                   {Array.from({ length: daysInMonth }, (_, i) => i + 1).map((day) => (
                     <TimesheetCell
