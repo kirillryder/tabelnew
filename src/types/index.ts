@@ -11,6 +11,8 @@ export interface Employee {
   departmentId: string;
   hourlyRate: number;
   hireDate: string;
+  isDismissed: boolean;
+  dismissalDate?: string;
 }
 
 export type AttendanceType = 'Я' | 'Б' | 'О' | 'К' | 'Н' | '';

@@ -9,6 +9,7 @@ export const EmployeeModal: React.FC<{ onClose: () => void }> = ({ onClose }) =>
     departmentId: departments[0]?.id || '',
     hourlyRate: 0,
     hireDate: new Date().toISOString().split('T')[0],
+    isDismissed: false,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
